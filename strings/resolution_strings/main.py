@@ -1,38 +1,64 @@
-def dynamic(text, width):
-    words = text.split()
-    count = len(words)
-    slack = [[0] * count for i in range(count)]
-    for i in range(count):
-        slack[i][i] = width - len(words[i])
-        for j in range(i + 1, count):
-            slack[i][j] = slack[i][j - 1] - len(words[j]) - 1
+def last_line(words, diff, i, j):
+    space_needed = j - i - 1
+    spaces_on_right = diff - space_needed
 
-    minima = [0] + [10 ** 20] * count
-    breaks = [0] * count
-    for j in range(count):
-        i = j
-        while i >= 0:
-            if slack[i][j] < 0:
-                cost = 10 ** 10
-            else:
-                cost = minima[i] + slack[i][j] ** 2
-            if minima[j + 1] > cost:
-                minima[j + 1] = cost
-                breaks[j] = i
-            i -= 1
+    word = "".join(words[i])
+    k = i + 1
+    while k < j:
+        word += " " + words[k]
+        k += 1
 
-    lines = []
-    j = count
-    while j > 0:
-        i = breaks[j - 1]
-        lines.append(' '.join(words[i:j]))
-        j = i
-    lines.reverse()
-    return lines
+    return word
 
 
-def dynamic_algorithm():
-    pass
+def justifying(words, diff, i, j):
+    space_needed = j - i - 1
+    spaces = diff // space_needed
+    extra_spaces = diff % space_needed
+
+    word = "".join(words[i])
+    k = i + 1
+    while k < j:
+        if extra_spaces > 0:
+            spaces_to_apply = spaces + 1
+        else:
+            spaces_to_apply = spaces + 0
+        extra_spaces -= 1
+
+        word += (" " * spaces_to_apply) + words[k]
+        k += 1
+    return word
+
+
+def dynamic_algorithm(text_input, max_width):
+
+    texts = text_input.split("\n")
+    out = []
+    for text in texts:
+        if len(text):
+            words = text.split(" ")
+            i = 0
+            n = len(words)
+            while i < n:
+                j = i + 1
+                line_length = len(words[i])
+                while j < n and ((line_length + len(words[j]) + (j - i - 1)) < max_width):
+                    line_length += len(words[j])
+                    j += 1
+
+                diff = max_width - line_length
+                number_of_words = j - i
+                result = ""
+                if number_of_words == 1:
+                    result += (last_line(words, diff, i, j))
+                else:
+                    result += (justifying(words, diff, i, j))
+                out.append(result)
+                i = j
+        else:
+            out.append("\n")
+
+    return out
 
 
 def greedy_algorithm(text_input, max_width):
@@ -55,19 +81,15 @@ def greedy_algorithm(text_input, max_width):
                 line_length += spaces
                 diff = max_width - line_length
                 number_of_words = (j - i)
-
+                result = ""
                 if number_of_words == 1:
-                    result = ""
                     result += words[j - 1]
                 else:
-                    result = ""
                     for k in range(i, j):
                         result += words[k]
                         if spaces > 0:
                             result += " "
                         spaces -= 1
-                    # if j < n:
-                    #     result += (" " * diff)
 
                 out.append(result)
                 i = j
@@ -92,7 +114,8 @@ if __name__ == '__main__':
     option_1 = 2
     while option_1 != 0:
         try:
-            option_1 = int(input("\nSelect a formatting type:\n" + "1 - Greedy Algorithm\n" +"2 - Dynamic Algorithm\n" + "0 - Exit\n"))
+            option_1 = int(input("\nSelect a formatting type:\n" + "1 - Greedy Algorithm (Basic)\n" +
+                                 "2 - Dynamic Algorithm (Intermediary)\n" + "0 - Exit\n"))
             if option_1 == 0:
                 break
             elif option_1 == 1 or option_1 == 2:
@@ -105,13 +128,12 @@ if __name__ == '__main__':
                             if option_1 == 1:
                                 text_out = greedy_algorithm(text_in, line_width)
                             else:
-                                #text_out = dynamic_algorithm(text_in, line_width)
-                                text_out = dynamic(text_in, line_width)
+                                text_out = dynamic_algorithm(text_in, line_width)
+
                             for idx, line in enumerate(text_out):
                                 if line != '\n':
                                     text_out[idx] += '\n'
-                            # print(text_out)
-                            # print("\n".join(text_out))
+
                             write_file_out(filename, "".join(text_out))
                         else:
                             print("Invalid number")
