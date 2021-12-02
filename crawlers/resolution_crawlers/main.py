@@ -9,7 +9,7 @@ def write_file_out(filename_out, text_output):
 
 if __name__ == '__main__':
     # list_subreddits = "askreddit;worldnews;cats"
-    list_subreddits = "askreddit"
+    list_subreddits = "askreddit;"
     # list_subreddits = input("Enter the list with the names of the subreddits you want to search "
     #                         "(Remember to separate the names with ';') :\n")
 
